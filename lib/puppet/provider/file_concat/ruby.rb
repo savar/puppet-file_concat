@@ -1,4 +1,4 @@
-Puppet::Type.type(:file_concat).provide(:ruby) do
+Puppet::Type.type(:file_concat).provide(:ruby, :parent => Puppet::Type.type(:file).provider(:posix)) do
 
   def exists?
     resource.stat ? true : false

@@ -4,6 +4,7 @@
 
 require 'puppet/type/file'
 require 'puppet/type/file/owner'
+require 'puppet/type/file/group'
 require 'puppet/type/file/mode'
 require 'puppet/util/checksums'
 
@@ -13,21 +14,31 @@ module Puppet
 
     ensurable
 
-#    def managed?
-#      true
-#    end
+    # the file/posix provider will check for the :links property
+    # which does not exist
+    def [](value)
+      if value == :links
+        return false
+      end
+
+      super
+    end
 
     newparam(:path, :namevar => true) do
       desc "An arbitrary tag for your own reference; the name of the message."
     end
 
-#    newproperty(:owner, :parent => Puppet::Type::File::Owner) do
-#      desc "Desired file owner."
-#    end
-#
-#    newproperty(:mode, :parent => Puppet::Type::File::Mode) do
-#      desc "Desired file mode."
-#    end
+    newproperty(:owner, :parent => Puppet::Type::File::Owner) do
+      desc "Desired file owner."
+    end
+
+    newproperty(:group, :parent => Puppet::Type::File::Group) do
+      desc "Desired file group."
+    end
+
+    newproperty(:mode, :parent => Puppet::Type::File::Mode) do
+      desc "Desired file mode."
+    end
 
     newproperty(:content) do
       desc "Read only attribute. Represents the content."
