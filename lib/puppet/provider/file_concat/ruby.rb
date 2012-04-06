@@ -5,7 +5,11 @@ Puppet::Type.type(:file_concat).provide(:ruby, :parent => Puppet::Type.type(:fil
   end
 
   def create
+    # FIXME security issue because the file won't necessarily
+    # be created with the specified mode/owner/group if they
+    # are specified
     send("content=", resource.should_content)
+    resource.property_fix
   end
 
   def destroy
@@ -14,7 +18,7 @@ Puppet::Type.type(:file_concat).provide(:ruby, :parent => Puppet::Type.type(:fil
 
   def content
     actual = File.read(resource[:path]) rescue nil
-    (actual == resource.should_content) ? "\0PLEASEMANAGE\0" : actual
+    (actual == resource.should_content) ? resource.no_content : actual
   end
 #
   def content=(value)
