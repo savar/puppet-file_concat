@@ -97,7 +97,7 @@ module Puppet
       @generated_content
     end
 
-    def stat
+    def stat(dummy_arg = nil)
       return @stat if @stat and not @stat == :needs_stat
       @stat = begin
         ::File.stat(self[:path])
