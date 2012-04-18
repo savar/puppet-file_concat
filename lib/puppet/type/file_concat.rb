@@ -87,7 +87,10 @@ module Puppet
       catalog.resources.select do |r|
         r.is_a?(Puppet::Type.type(:file_fragment)) && r[:path] == self[:path]
       end.each do |r|
-        content_fragments << [r[:order].to_i, r[:content]]
+        content_fragments << [
+          "#{r[:order]}_#{r[:name]}", # sort key as in old concat module
+          r[:content]
+        ]
       end
 
       content_fragments.sort { |l,r| l[0] <=> r[0] }.each do |cf|
