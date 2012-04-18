@@ -9,8 +9,16 @@ module Puppet
       desc "TODO"
     end
 
+    newparam(:target) do
+      desc "Deprecated. Use *path* instead."
+    end
+
     newparam(:path) do
       desc "TODO"
+
+      defaultto do
+	resource.value(:target)
+      end
     end
 
     newparam(:content) do
