@@ -86,10 +86,19 @@ Puppet::Type.newtype(:file_concat) do
     catalog.resources.select do |r|
       r.is_a?(Puppet::Type.type(:file_fragment)) && r[:path] == self[:path]
     end.each do |r|
+
+      if r[:content].nil? == false
+        fragment_content = r[:content]
+      elsif r[:source].nil? ==false
+        tmp = Puppet::FileServing::Content.indirection.find(r[:source], :environment => catalog.environment)
+        fragment_content = tmp.content
+      end
+
       content_fragments << [
         "#{r[:order]}_#{r[:name]}", # sort key as in old concat module
-        r[:content]
+        fragment_content
       ]
+
     end
 
     content_fragments.sort { |l,r| l[0] <=> r[0] }.each do |cf|
