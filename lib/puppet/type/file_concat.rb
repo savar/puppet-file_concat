@@ -100,7 +100,8 @@ Puppet::Type.newtype(:file_concat) do
     content_fragments = []
 
     catalog.resources.select do |r|
-      r.is_a?(Puppet::Type.type(:file_fragment)) && r[:path] == self[:path]
+      # file_fragment's +path+ parameter is deprecated.. use +target+ instead
+      r.is_a?(Puppet::Type.type(:file_fragment)) && ([r[:path], r[:target]].include?(self[:path]) || r[:target] == self.title)
     end.each do |r|
 
       if r[:content].nil? == false
@@ -111,14 +112,14 @@ Puppet::Type.newtype(:file_concat) do
       end
 
       content_fragments << [
-        "#{r[:order]}_#{r[:name]}", # sort key as in old concat module
+        r[:order].to_i, r[:name], # sort numerical on :order (sorting alpha on :name if :order is equal)
         fragment_content
       ]
 
     end
 
-    content_fragments.sort { |l,r| l[0] <=> r[0] }.each do |cf|
-      @generated_content += cf[1]
+    content_fragments.sort { |l,r| l[0] == r[0] ? l[1] <=> r[1] : l[0] <=> r[0] }.each do |cf|
+      @generated_content += cf[2]
     end
 
     @generated_content
