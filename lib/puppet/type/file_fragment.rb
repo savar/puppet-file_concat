@@ -10,15 +10,16 @@ module Puppet
     end
 
     newparam(:target) do
-      desc "Deprecated. Use *path* instead."
+      desc "TODO"
+
+      # Can be removed after +path+ isn't in use anymore
+      defaultto do
+        resource.value(:path)
+      end
     end
 
     newparam(:path) do
-      desc "TODO"
-
-      defaultto do
-	resource.value(:target)
-      end
+      desc "Deprecated. Use *target* instead."
     end
 
     newparam(:content) do
@@ -37,7 +38,6 @@ module Puppet
       validate do |val|
         fail Puppet::ParseError "only integers > 0 are allowed and not '#{val}'" if val !~ /^\d+$/
       end
-
     end
 
     validate do
