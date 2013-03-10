@@ -35,6 +35,22 @@ Puppet::Type.newtype(:file_concat) do
     desc "Desired file group."
   end
 
+  # Autorequire the owner and group of the file.
+  {:user => :owner, :group => :group}.each do |type, property|
+    autorequire(type) do
+      if @parameters.include?(property)
+        # The user/group property automatically converts to IDs
+        next unless should = @parameters[property].shouldorig
+        val = should[0]
+        if val.is_a?(Integer) or val =~ /^\d+$/
+          nil
+        else
+          val
+        end
+      end
+    end
+  end
+
   newproperty(:mode, :parent => Puppet::Type::File::Mode) do
     desc "Desired file mode."
   end
@@ -89,7 +105,7 @@ Puppet::Type.newtype(:file_concat) do
 
       if r[:content].nil? == false
         fragment_content = r[:content]
-      elsif r[:source].nil? ==false
+      elsif r[:source].nil? == false
         tmp = Puppet::FileServing::Content.indirection.find(r[:source], :environment => catalog.environment)
         fragment_content = tmp.content
       end
