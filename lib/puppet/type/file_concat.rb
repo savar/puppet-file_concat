@@ -24,7 +24,7 @@ Puppet::Type.newtype(:file_concat) do
   end
 
   newparam(:path, :namevar => true) do
-    desc "An arbitrary tag for your own reference; the name of the message."
+    desc "Path to the file."
   end
 
   newproperty(:owner, :parent => Puppet::Type::File::Owner) do
@@ -90,6 +90,12 @@ Puppet::Type.newtype(:file_concat) do
     end
   end
 
+  newparam(:use_tag, :boolean => true, :parent => Puppet::Parameter::Boolean) do
+    desc "Should the +tag+ attribute be used to collect file_fragments beside the +path+ attribute? (all specified tags must exists on the file_fragment's)"
+
+    defaultto true
+  end
+
   def no_content
     "\0PLEASE_MANAGE_THIS_WITH_FILE_CONCAT\0"
   end
@@ -100,7 +106,10 @@ Puppet::Type.newtype(:file_concat) do
     content_fragments = []
 
     catalog.resources.select do |r|
-      r.is_a?(Puppet::Type.type(:file_fragment)) && r[:path] == self[:path]
+      r.is_a?(Puppet::Type.type(:file_fragment)) && (
+        r[:path] == value(:path) ||
+        use_tag? && value(:tag) && value(:tag).all? { |o| r[:tag] && r[:tag].include?(o) }
+      )
     end.each do |r|
 
       if r[:content].nil? == false
@@ -127,7 +136,7 @@ Puppet::Type.newtype(:file_concat) do
   def stat(dummy_arg = nil)
     return @stat if @stat and not @stat == :needs_stat
     @stat = begin
-      ::File.stat(self[:path])
+      ::File.stat(value(:path))
     rescue Errno::ENOENT => error
       nil
     rescue Errno::EACCES => error
